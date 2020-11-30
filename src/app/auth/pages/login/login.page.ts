@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
+import { OverlayService } from './../../../core/services/overlay.service';
 import { AuthProvider } from './../../../core/services/auth.types';
 import { AuthService } from 'src/app/core/services/auth.service';
 
@@ -24,7 +25,8 @@ export class LoginPage implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private overlayService: OverlayService 
     ) { }
 
   ngOnInit(): void {
@@ -51,6 +53,8 @@ export class LoginPage implements OnInit {
   }
 
   changeAuthAction(){
+    
+    
     this.configs.isSignIn = !this.configs.isSignIn;
     const { isSignIn } = this.configs;
     this.configs.action = isSignIn ? 'Login' : 'Sign Up';
@@ -61,7 +65,7 @@ export class LoginPage implements OnInit {
   }
 
   async onSubmit(provider){
-    
+    const loading = await this.overlayService.loading();
     try {
       const credencias = await this.authService.authenticate({
         isSignIn: this.configs.isSignIn,
@@ -70,7 +74,12 @@ export class LoginPage implements OnInit {
       });
       console.log('autenticado', credencias);
     } catch (error) {
-      console.log(error);
+      console.log('erro autenticação',error);
+      await this.overlayService.toast({
+        message: error.message,
+      })
+    }finally{
+      loading.dismiss();
     }
   }
 
