@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
+import { AuthProvider } from './../../../core/services/auth.types';
+import { AuthService } from 'src/app/core/services/auth.service';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -9,6 +12,8 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 export class LoginPage implements OnInit {
 
   authForm: FormGroup;
+  authProviders = AuthProvider;
+
   configs = {
     isSignIn: true,
     action: 'login',
@@ -18,7 +23,8 @@ export class LoginPage implements OnInit {
   private nameControl= new FormControl('',[Validators.required, Validators.minLength(3)])
 
   constructor(
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private authService: AuthService
     ) { }
 
   ngOnInit(): void {
@@ -54,8 +60,18 @@ export class LoginPage implements OnInit {
       : this.authForm.removeControl('name');
   }
 
-  onSubmit(){
-    console.log(this.authForm.value);
+  async onSubmit(provider){
+    
+    try {
+      const credencias = await this.authService.authenticate({
+        isSignIn: this.configs.isSignIn,
+        user: this.authForm.value,
+        provider
+      });
+      console.log('autenticado', credencias);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
 }
